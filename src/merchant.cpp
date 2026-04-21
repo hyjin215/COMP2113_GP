@@ -1,65 +1,81 @@
-#include "shop.h"
-#include "gamelogger.h"
+#include "merchant.h"
+#include <iostream>
 
-// Constructor: initialize discount and pointers
-Shop::Shop()
-    : merchant(nullptr), player(nullptr), inventory(nullptr), sellDiscount(SELL_DISCOUNT) {}
-
-// Link merchant, player, and inventory to the shop
-void Shop::initShop(Merchant* m, Player* p, Inventory* inv) {
-    merchant = m;
-    player = p;
-    inventory = inv;
+// Constructor: initialize merchant with game difficulty
+Merchant::Merchant(Difficulty diff)
+    : difficulty(diff), isAvailable(true) {
+    // Initialize all items when merchant is created
+    initializeGoods();
 }
 
-// Buy item from shop: check gold, deduct gold, add to inventory
-bool Shop::buyItem(ItemType type, int grade) {
-    // Check if merchant has the item
-    if (!merchant->hasItem(type, grade)) {
-        return false;
+// Destructor
+Merchant::~Merchant() {}
+
+// Initialize all goods (Potion / Sword / Armor, 3 grades each)
+// Follows README Item System design: Low / Mid / High grade
+void Merchant::initializeGoods() {
+    // Clear goods list first
+    goods.clear();
+
+    // Create POTION for grade 0, 1, 2
+    for (int grade = 0; grade < 3; grade++) {
+        Item potion;
+        potion.initItem(ItemType::POTION, grade);
+        goods.push_back(potion);
     }
 
-    Item item = merchant->getItem(type, grade);
-    int price = item.getPrice();
-
-    // Check if player has enough gold
-    if (player->getMoney() < price) {
-        return false;
+    // Create SWORD for grade 0, 1, 2
+    for (int grade = 0; grade < 3; grade++) {
+        Item sword;
+        sword.initItem(ItemType::SWORD, grade);
+        goods.push_back(sword);
     }
 
-    // Deduct gold and add item to inventory
-    player->changeMoney(-price);
-    inventory->addItem(item.getName());
-
-    // Log transaction
-    GameLogger::getInstance().log("Bought " + item.getName() + " for " + std::to_string(price) + " gold");
-    return true;
+    // Create ARMOR for grade 0, 1, 2
+    for (int grade = 0; grade < 3; grade++) {
+        Item armor;
+        armor.initItem(ItemType::ARMOR, grade);
+        goods.push_back(armor);
+    }
 }
 
-// Sell item to shop: remove from inventory, add gold (with discount)
-bool Shop::sellItem(ItemType type, int grade) {
-    Item tempItem;
-    tempItem.initItem(type, grade);
-    std::string itemName = tempItem.getName();
-
-    // Check if inventory has the item
-    if (!inventory->hasItem(itemName)) {
-        return false;
+// Check if the merchant has the specified item (type + grade)
+bool Merchant::hasItem(ItemType type, int grade) const {
+    for (const Item& item : goods) {
+        if (item.getType() == type && item.getGrade() == grade) {
+            return true;
+        }
     }
-
-    // Calculate sell price
-    int sellPrice = calculateSellPrice(tempItem);
-
-    // Remove item and give gold to player
-    inventory->removeItem(itemName);
-    player->changeMoney(sellPrice);
-
-    // Log transaction
-    GameLogger::getInstance().getInstance().log("Sold " + itemName + " for " + std::to_string(sellPrice) + " gold");
-    return true;
+    return false;
 }
 
-// Calculate selling price: original price * discount
-int Shop::calculateSellPrice(const Item& item) const {
-    return static_cast<int>(item.getPrice() * sellDiscount);
+// Get the specified item from merchant
+Item Merchant::getItem(ItemType type, int grade) const {
+    for (const Item& item : goods) {
+        if (item.getType() == type && item.getGrade() == grade) {
+            return item;
+        }
+    }
+    // Return empty item if not found
+    return Item();
+}
+
+// Return all goods list as string for shop UI display
+std::string Merchant::showGoodsList() const {
+    std::string list = "\n=== Merchant Goods ===\n";
+    for (const Item& item : goods) {
+        list += "- " + item.getName()
+             + " | Price: " + std::to_string(item.getPrice()) + " gold\n";
+    }
+    return list;
+}
+
+// Check if merchant is available (for shop spawn logic)
+bool Merchant::getIsAvailable() const {
+    return isAvailable;
+}
+
+// Set merchant availability (open/close shop)
+void Merchant::setIsAvailable(bool status) {
+    isAvailable = status;
 }
