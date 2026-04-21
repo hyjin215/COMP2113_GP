@@ -1,25 +1,28 @@
 #include "gamelogger.h"
 #include <iostream>
-#include <ctime>
+#include <fstream>
 
-// Constructor
+// Static instance
+GameLogger& GameLogger::getInstance() {
+    static GameLogger instance;
+    return instance;
+}
+
+// Constructor: open log file
 GameLogger::GameLogger() {
-    logPath = "transaction_log.txt";
+    logFile.open("transaction_log.txt", std::ios::app);
 }
 
-// Destructor
+// Destructor: close file
 GameLogger::~GameLogger() {
-    if (logFile.is_open())
+    if (logFile.is_open()) {
         logFile.close();
+    }
 }
 
-// Initialize log file
-void GameLogger::initLogFile() {
-    logFile.open(logPath, std::ios::app);
+// Log message to file
+void GameLogger::log(const std::string& message) {
+    if (logFile.is_open()) {
+        logFile << "[LOG] " << message << std::endl;
+    }
 }
-
-// Log transaction with timestamp
-void GameLogger::log(const std::string& playerName, const std::string& action, const std::string& itemName, int goldChange) {}
-
-// Close log file
-void GameLogger::closeLog() {}
