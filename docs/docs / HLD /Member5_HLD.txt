@@ -1,0 +1,40 @@
+# Member5 High-Level Design (HLD)
+## Module: Item, Merchant Shop & Transaction System
+
+### 1. Module Overview
+This module implements all item mechanics, merchant inventory management, player-shop transaction logic, persistent game log recording, and independent function testing for the roguelike dungeon game.
+It completes the full trading system between players and in-game merchants, including item initialization, multi-grade item classification, buy/sell rules, and permanent transaction record storage.
+
+### 2. File Structure
+The module consists of 5 pairs of header and implementation files:
+- item.h / item.cpp: Defines all item types, grade tiers, fixed attributes, and item effect logic
+- merchant.h / merchant.cpp: Controls merchant stock, difficulty adaptation, and goods display interface
+- shop.h / shop.cpp: Realizes complete player buy/sell workflow and resale discount rules
+- gamelogger.h / gamelogger.cpp: Provides timestamp-based persistent transaction logging functions
+- gametester.h / gametester.cpp: Isolated test cases for all module function verification
+
+### 3. Data Structure Design
+- Enumeration definitions: ItemType (POTION, SWORD, ARMOR), game Difficulty levels
+- 3 grade tiers for every item category: Low, Medium, High level
+- Predefined constant tables for item effect values and base purchase prices
+- Merchant inventory: Map container that stores 3 grades of items for each item type
+- Fixed maximum stock limit for all merchant goods
+
+### 4. Core Function Logic
+1. Automatic item initialization with bound type and grade attributes
+2. Unlimited merchant inventory adaptation to different game difficulty modes
+3. Complete player item purchase and sell-back transaction process
+4. Fixed 50% discount rule for all equipment resale transactions
+5. Persistent transaction log recording with system timestamp information
+6. Independent function test suite without running the full game program
+
+### 5. Inter-Module Connections
+This module interacts with other team modules in the project:
+- Game core module: Triggers shop entrance when player enters corresponding dungeon room
+- Player & inventory module: Reads and updates player gold balance and backpack storage data
+
+### 6. Project Constraints
+1. Consumable potion items have no upper storage limit in player inventory
+2. Equipment items follow the project's maximum inventory capacity constraint
+3. All item resale prices are permanently fixed at 50% of original purchase price
+4. Every player transaction will be fully recorded in the log file
