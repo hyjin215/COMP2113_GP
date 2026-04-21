@@ -1,61 +1,65 @@
-#include "merchant.h"
+#include "shop.h"
+#include "gamelogger.h"
 
-// Default constructor
-Merchant::Merchant() {
-    maxStockPerItem = MAX_STOCK;
-    isAvailable = false;
-    currentDiff = Difficulty::EASY;
+// Constructor: initialize discount and pointers
+Shop::Shop()
+    : merchant(nullptr), player(nullptr), inventory(nullptr), sellDiscount(SELL_DISCOUNT) {}
+
+// Link merchant, player, and inventory to the shop
+void Shop::initShop(Merchant* m, Player* p, Inventory* inv) {
+    merchant = m;
+    player = p;
+    inventory = inv;
 }
 
-// Destructor
-Merchant::~Merchant() {}
-
-// Initialize merchant goods and availability
-void Merchant::initMerchant(Difficulty diff) {
-    currentDiff = diff;
-    isAvailable = true;
-
-    for (int grade = 0; grade < 3; grade++) {
-        Item potion;
-        potion.initItem(ItemType::POTION, grade);
-        goods[ItemType::POTION][grade] = potion;
-
-        Item sword;
-        sword.initItem(ItemType::SWORD, grade);
-        goods[ItemType::SWORD][grade] = sword;
-
-        Item armor;
-        armor.initItem(ItemType::ARMOR, grade);
-        goods[ItemType::ARMOR][grade] = armor;
+// Buy item from shop: check gold, deduct gold, add to inventory
+bool Shop::buyItem(ItemType type, int grade) {
+    // Check if merchant has the item
+    if (!merchant->hasItem(type, grade)) {
+        return false;
     }
+
+    Item item = merchant->getItem(type, grade);
+    int price = item.getPrice();
+
+    // Check if player has enough gold
+    if (player->getMoney() < price) {
+        return false;
+    }
+
+    // Deduct gold and add item to inventory
+    player->changeMoney(-price);
+    inventory->addItem(item.getName());
+
+    // Log transaction
+    GameLogger::getInstance().log("Bought " + item.getName() + " for " + std::to_string(price) + " gold");
+    return true;
 }
 
-// Check if the item exists in stock
-bool Merchant::hasItem(ItemType type, int grade) {
-    return goods[type][grade].getGrade() == grade;
+// Sell item to shop: remove from inventory, add gold (with discount)
+bool Shop::sellItem(ItemType type, int grade) {
+    Item tempItem;
+    tempItem.initItem(type, grade);
+    std::string itemName = tempItem.getName();
+
+    // Check if inventory has the item
+    if (!inventory->hasItem(itemName)) {
+        return false;
+    }
+
+    // Calculate sell price
+    int sellPrice = calculateSellPrice(tempItem);
+
+    // Remove item and give gold to player
+    inventory->removeItem(itemName);
+    player->changeMoney(sellPrice);
+
+    // Log transaction
+    GameLogger::getInstance().getInstance().log("Sold " + itemName + " for " + std::to_string(sellPrice) + " gold");
+    return true;
 }
 
-// Get the specified item from inventory
-Item Merchant::getItem(ItemType type, int grade) {
-    return goods[type][grade];
-}
-
-// Show all goods provided by the merchant
-std::string Merchant::showGoodsList() {
-    return "=== Merchant Goods ===\nPotions (Lv0-2)\nSwords (Lv0-2)\nArmors (Lv0-2)";
-}
-
-// Check merchant availability
-bool Merchant::getIsAvailable() const {
-    return isAvailable;
-}
-
-// Set merchant availability status
-void Merchant::setIsAvailable(bool status) {
-    isAvailable = status;
-}
-
-// Get current game difficulty
-Difficulty Merchant::getCurrentDiff() const {
-    return currentDiff;
+// Calculate selling price: original price * discount
+int Shop::calculateSellPrice(const Item& item) const {
+    return static_cast<int>(item.getPrice() * sellDiscount);
 }
