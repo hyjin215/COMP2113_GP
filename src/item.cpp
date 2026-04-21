@@ -1,76 +1,65 @@
 #include "item.h"
 
 // Default constructor
-Item::Item() {}
+Item::Item()
+    : itemType(ItemType::POTION), grade(0), name(""), hpEffect(0), atkEffect(0), defEffect(0), price(0) {}
 
-// Destructor
-Item::~Item() {}
-
-// Initialize item attributes based on type and grade
+// Initialize item with type and grade (set stats, name, price based on type and grade)
 void Item::initItem(ItemType type, int grade) {
-    this->type = type;
+    itemType = type;
     this->grade = grade;
 
-    if (type == ItemType::POTION) {
-        isConsumable = true;
-        name = "Potion";
-        effectValue = ITEM_EFFECT_POTION[grade];
-        price = ITEM_PRICE_POTION[grade];
+    // Set effects and price based on item type and grade
+    switch (type) {
+        case ItemType::POTION:
+            name = "Potion_" + std::to_string(grade);
+            hpEffect = ITEM_EFFECT_POTION * (grade + 1);
+            atkEffect = 0;
+            defEffect = 0;
+            price = ITEM_PRICE_POTION * (grade + 1);
+            break;
+
+        case ItemType::SWORD:
+            name = "Sword_" + std::to_string(grade);
+            hpEffect = 0;
+            atkEffect = ITEM_EFFECT_SWORD * (grade + 1);
+            defEffect = 0;
+            price = ITEM_PRICE_SWORD * (grade + 1);
+            break;
+
+        case ItemType::ARMOR:
+            name = "Armor_" + std::to_string(grade);
+            hpEffect = 0;
+            atkEffect = 0;
+            defEffect = ITEM_EFFECT_ARMOR * (grade + 1);
+            price = ITEM_PRICE_ARMOR * (grade + 1);
+            break;
     }
-    else if (type == ItemType::SWORD) {
-        isConsumable = false;
-        name = "Sword";
-        effectValue = ITEM_EFFECT_SWORD[grade];
-        price = ITEM_PRICE_SWORD[grade];
+}
+
+// Apply item effects to player (heal HP, increase ATK/DEF)
+void Item::applyEffect(Player& player) {
+    // Potion: restore health
+    if (itemType == ItemType::POTION) {
+        player.change_HP(hpEffect);
     }
-    else if (type == ItemType::ARMOR) {
-        isConsumable = false;
-        name = "Armor";
-        effectValue = ITEM_EFFECT_ARMOR[grade];
-        price = ITEM_PRICE_ARMOR[grade];
+
+    // Sword: increase attack
+    if (itemType == ItemType::SWORD) {
+        player.change_ATK(atkEffect);
     }
-    originalPurchasePrice = price;
+
+    // Armor: increase defense
+    if (itemType == ItemType::ARMOR) {
+        player.change_DEF(defEffect);
+    }
 }
 
-// Get item type
-ItemType Item::getType() const {
-    return type;
-}
-
-// Get item grade
-int Item::getGrade() const {
-    return grade;
-}
-
-// Get item name
-std::string Item::getName() const {
-    return name;
-}
-
-// Get item effect value
-int Item::getEffectValue() const {
-    return effectValue;
-}
-
-// Get item price
-int Item::getPrice() const {
-    return price;
-}
-
-// Get original purchase price
-int Item::getOriginalPurchasePrice() const {
-    return originalPurchasePrice;
-}
-
-// Check if item is consumable
-bool Item::isConsumableItem() const {
-    return isConsumable;
-}
-
-// Set original purchase price
-void Item::setOriginalPurchasePrice(int price) {
-    originalPurchasePrice = price;
-}
-
-// Apply item effect to player
-void Item::applyEffect(Player& player) {}
+// Getter functions
+std::string Item::getName() const { return name; }
+ItemType Item::getType() const { return itemType; }
+int Item::getGrade() const { return grade; }
+int Item::getHpEffect() const { return hpEffect; }
+int Item::getAtkEffect() const { return atkEffect; }
+int Item::getDefEffect() const { return defEffect; }
+int Item::getPrice() const { return price; }
