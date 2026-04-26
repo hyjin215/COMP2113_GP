@@ -1,65 +1,90 @@
 #include "item.h"
+#include <iostream>
+#include <string>
 
 // Default constructor
 Item::Item()
-    : itemType(ItemType::POTION), grade(0), name(""), hpEffect(0), atkEffect(0), defEffect(0), price(0) {}
+    : itemName(""), itemType(CONSUMABLE), itemRarity(LOW),
+      price(0), healAmount(0), attackBoost(0), defenseBoost(0),
+      isConsumed(false) {}
 
-// Initialize item with type and grade (set stats, name, price based on type and grade)
-void Item::initItem(ItemType type, int grade) {
-    itemType = type;
-    this->grade = grade;
+// Parameterized constructor
+Item::Item(const std::string& name, ItemType type, ItemRarity rarity,
+           int cost, int heal, int attack, int defense)
+    : itemName(name), itemType(type), itemRarity(rarity),
+      price(cost), healAmount(heal), attackBoost(attack), defenseBoost(defense),
+      isConsumed(false) {}
 
-    // Set effects and price based on item type and grade
-    switch (type) {
-        case ItemType::POTION:
-            name = "Potion_" + std::to_string(grade);
-            hpEffect = ITEM_EFFECT_POTION * (grade + 1);
-            atkEffect = 0;
-            defEffect = 0;
-            price = ITEM_PRICE_POTION * (grade + 1);
-            break;
-
-        case ItemType::SWORD:
-            name = "Sword_" + std::to_string(grade);
-            hpEffect = 0;
-            atkEffect = ITEM_EFFECT_SWORD * (grade + 1);
-            defEffect = 0;
-            price = ITEM_PRICE_SWORD * (grade + 1);
-            break;
-
-        case ItemType::ARMOR:
-            name = "Armor_" + std::to_string(grade);
-            hpEffect = 0;
-            atkEffect = 0;
-            defEffect = ITEM_EFFECT_ARMOR * (grade + 1);
-            price = ITEM_PRICE_ARMOR * (grade + 1);
-            break;
-    }
+// Get name of item
+std::string Item::getItemName() const {
+    return itemName;
 }
 
-// Apply item effects to player (heal HP, increase ATK/DEF)
-void Item::applyEffect(Player& player) {
-    // Potion: restore health
-    if (itemType == ItemType::POTION) {
-        player.change_HP(hpEffect);
-    }
-
-    // Sword: increase attack
-    if (itemType == ItemType::SWORD) {
-        player.change_ATK(atkEffect);
-    }
-
-    // Armor: increase defense
-    if (itemType == ItemType::ARMOR) {
-        player.change_DEF(defEffect);
-    }
+// Get item type (CONSUMABLE, WEAPON, ARMOR)
+ItemType Item::getItemType() const {
+    return itemType;
 }
 
-// Getter functions
-std::string Item::getName() const { return name; }
-ItemType Item::getType() const { return itemType; }
-int Item::getGrade() const { return grade; }
-int Item::getHpEffect() const { return hpEffect; }
-int Item::getAtkEffect() const { return atkEffect; }
-int Item::getDefEffect() const { return defEffect; }
-int Item::getPrice() const { return price; }
+// Get item rarity (LOW, MEDIUM, HIGH)
+ItemRarity Item::getItemRarity() const {
+    return itemRarity;
+}
+
+// Get item price
+int Item::getPrice() const {
+    return price;
+}
+
+// Get heal amount
+int Item::getHealAmount() const {
+    return healAmount;
+}
+
+// Get attack boost value
+int Item::getAttackBoost() const {
+    return attackBoost;
+}
+
+// Get defense boost value
+int Item::getDefenseBoost() const {
+    return defenseBoost;
+}
+
+// Check if item is consumed
+bool Item::getIsConsumed() const {
+    return isConsumed;
+}
+
+// Set consume state
+void Item::setIsConsumed(bool state) {
+    isConsumed = state;
+}
+
+// Display item information
+void Item::displayItemInfo() const {
+    std::cout << "Item: " << itemName << "\n";
+    std::cout << "Type: ";
+
+    // Display type
+    switch (itemType) {
+        case CONSUMABLE: std::cout << "Consumable"; break;
+        case WEAPON: std::cout << "Weapon"; break;
+        case ARMOR: std::cout << "Armor"; break;
+        default: std::cout << "Unknown"; break;
+    }
+
+    std::cout << "\nRarity: ";
+
+    // Display rarity
+    switch (itemRarity) {
+        case LOW: std::cout << "Low"; break;
+        case MEDIUM: std::cout << "Medium"; break;
+        case HIGH: std::cout << "High"; break;
+        default: std::cout << "Unknown"; break;
+    }
+
+    std::cout << "\nPrice: " << price << " gold\n";
+    std::cout << "Heal: " << healAmount << "\n";
+    std::cout << "Attack: " << attackBoost << "\n";
+    std::cout << "Defense: " << defenseBoost << "\n\n";
+}
