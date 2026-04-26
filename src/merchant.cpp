@@ -1,81 +1,85 @@
 #include "merchant.h"
 #include <iostream>
+#include <string>
 
-// Constructor: initialize merchant with game difficulty
-Merchant::Merchant(Difficulty diff)
-    : difficulty(diff), isAvailable(true) {
-    // Initialize all items when merchant is created
-    initializeGoods();
+// Constructor: Initialize merchant with game difficulty and set default availability
+Merchant::Merchant(int gameDiff)
+    : currentDiff(gameDiff), isAvailable(true) {
+    initMerchant();
 }
 
 // Destructor
-Merchant::~Merchant() {}
+Merchant::~Merchant() = default;
 
-// Initialize all goods (Potion / Sword / Armor, 3 grades each)
-// Follows README Item System design: Low / Mid / High grade
-void Merchant::initializeGoods() {
-    // Clear goods list first
-    goods.clear();
+// Initialize all merchant goods with 3 rarity levels per item type
+void Merchant::initMerchant() {
+    // Initialize Consumable Items (Potion)
+    goods[CONSUMABLE][0] = Item("Low Potion", CONSUMABLE, LOW, LOW_PRICE, LOW_HEAL, 0, 0);
+    goods[CONSUMABLE][1] = Item("Medium Potion", CONSUMABLE, MEDIUM, MEDIUM_PRICE, MEDIUM_HEAL, 0, 0);
+    goods[CONSUMABLE][2] = Item("High Potion", CONSUMABLE, HIGH, HIGH_PRICE, HIGH_HEAL, 0, 0);
 
-    // Create POTION for grade 0, 1, 2
-    for (int grade = 0; grade < 3; grade++) {
-        Item potion;
-        potion.initItem(ItemType::POTION, grade);
-        goods.push_back(potion);
-    }
+    // Initialize Weapon Items (Sword)
+    goods[WEAPON][0] = Item("Iron Sword", WEAPON, LOW, LOW_PRICE, 0, LOW_ATTACK, 0);
+    goods[WEAPON][1] = Item("Steel Sword", WEAPON, MEDIUM, MEDIUM_PRICE, 0, MEDIUM_ATTACK, 0);
+    goods[WEAPON][2] = Item("Golden Sword", WEAPON, HIGH, HIGH_PRICE, 0, HIGH_ATTACK, 0);
 
-    // Create SWORD for grade 0, 1, 2
-    for (int grade = 0; grade < 3; grade++) {
-        Item sword;
-        sword.initItem(ItemType::SWORD, grade);
-        goods.push_back(sword);
-    }
-
-    // Create ARMOR for grade 0, 1, 2
-    for (int grade = 0; grade < 3; grade++) {
-        Item armor;
-        armor.initItem(ItemType::ARMOR, grade);
-        goods.push_back(armor);
-    }
+    // Initialize Armor Items
+    goods[ARMOR][0] = Item("Cloth Armor", ARMOR, LOW, LOW_PRICE, 0, 0, LOW_DEFENSE);
+    goods[ARMOR][1] = Item("Iron Armor", ARMOR, MEDIUM, MEDIUM_PRICE, 0, 0, MEDIUM_DEFENSE);
+    goods[ARMOR][2] = Item("Dragon Armor", ARMOR, HIGH, HIGH_PRICE, 0, 0, HIGH_DEFENSE);
 }
 
-// Check if the merchant has the specified item (type + grade)
-bool Merchant::hasItem(ItemType type, int grade) const {
-    for (const Item& item : goods) {
-        if (item.getType() == type && item.getGrade() == grade) {
-            return true;
-        }
+// Check if the merchant has the specified item type and rarity index
+bool Merchant::hasItem(ItemType type, int rarityIndex) const {
+    if (rarityIndex < 0 || rarityIndex >= 3) {
+        return false;
     }
-    return false;
+    return true;
 }
 
-// Get the specified item from merchant
-Item Merchant::getItem(ItemType type, int grade) const {
-    for (const Item& item : goods) {
-        if (item.getType() == type && item.getGrade() == grade) {
-            return item;
-        }
+// Get the item from goods by type and rarity index
+Item Merchant::getItem(ItemType type, int rarityIndex) const {
+    if (hasItem(type, rarityIndex)) {
+        return goods.at(type).at(rarityIndex);
     }
-    // Return empty item if not found
+    // Return default empty item if not found
     return Item();
 }
 
-// Return all goods list as string for shop UI display
-std::string Merchant::showGoodsList() const {
-    std::string list = "\n=== Merchant Goods ===\n";
-    for (const Item& item : goods) {
-        list += "- " + item.getName()
-             + " | Price: " + std::to_string(item.getPrice()) + " gold\n";
+// Show all goods list with detailed information
+void Merchant::showGoodsList() const {
+    std::cout << "\n===== Merchant Shop =====" << std::endl;
+
+    // Display all consumable items
+    std::cout << "\n[Consumable Items]" << std::endl;
+    for (int i = 0; i < 3; ++i) {
+        goods.at(CONSUMABLE).at(i).displayItemInfo();
     }
-    return list;
+
+    // Display all weapon items
+    std::cout << "[Weapon Items]" << std::endl;
+    for (int i = 0; i < 3; ++i) {
+        goods.at(WEAPON).at(i).displayItemInfo();
+    }
+
+    // Display all armor items
+    std::cout << "[Armor Items]" << std:: endl;
+    for (int i = 0; i < 3; ++i) {
+        goods.at(ARMOR).at(i).displayItemInfo();
+    }
 }
 
-// Check if merchant is available (for shop spawn logic)
+// Get merchant availability status
 bool Merchant::getIsAvailable() const {
     return isAvailable;
 }
 
-// Set merchant availability (open/close shop)
-void Merchant::setIsAvailable(bool status) {
-    isAvailable = status;
+// Set merchant availability status
+void Merchant::setIsAvailable(bool state) {
+    isAvailable = state;
+}
+
+// Get current game difficulty
+int Merchant::getCurrentDiff() const {
+    return currentDiff;
 }
